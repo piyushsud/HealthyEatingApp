@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">HealthyEating</string>
+    <string name="scd">SCD</string>
+    <string name="glutenFree">Gluten Free</string>
+    <string name="vegan">Vegan</string>
+    <string name="home">Home</string>
+    <string name="preferences">Preferences</string>
+    <string name="logOut">Log Out</string>
+    <string name="googleMapsScreen">Google Maps Screen</string>
+    <string name="preferencesScreen">Preferences Screen</string>
+    <string name="savePreferences">Save Preferences</string>
+    <string name="facebook_app_id">376054973152168</string>
+
+</resources>
