@@ -6,9 +6,10 @@
     <string name="home">Home</string>
     <string name="preferences">Preferences</string>
     <string name="logOut">Log Out</string>
-    <string name="googleMapsScreen">Google Maps Screen</string>
-    <string name="preferencesScreen">Preferences Screen</string>
     <string name="savePreferences">Save Preferences</string>
     <string name="facebook_app_id">376054973152168</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="allergicToNuts">Allergic To Nuts</string>
+    <string name="lactoseIntolerant">Lactose Intolerant</string>
 
 </resources>

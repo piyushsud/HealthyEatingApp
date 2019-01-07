@@ -1,11 +1,10 @@
 package com.example.piyush.healthyeating;
 
-import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 
 import com.facebook.AccessToken;
@@ -22,20 +21,25 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
-import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.google.gson.Gson;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.MalformedURLException;
-
 public class MainActivity extends AppCompatActivity {
+
+    private static final String GET_PREFERENCES_URL = "http://apptesting.getsandbox.com/preferences";
+    private static final String UPDATE_PREFERENCES_URL = "http://apptesting.getsandbox.com/updatepreference";
+    private static final String LOGIN_URL = "http://apptesting.getsandbox.com/login";
+    private static final String SHARED_PREFS = "sharedPrefs";
+    private static final String SCD_STRING = "scdPrefs";
+    private static final String VEGAN_STRING = "veganPrefs";
+    private static final String GLUTEN_FREE_STRING = "glutenFreePrefs";
 
     LoginButton loginButton;
     CallbackManager callbackManager;
-    TextView textView;
 
     String userId;
     String firstName = " ";
@@ -51,12 +55,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Intent getIntent = getIntent();
         loginButton = (LoginButton)findViewById(R.id.fb_login_button);
-        textView = (TextView)findViewById(R.id.textView2);
         callbackManager = CallbackManager.Factory.create();
         final RequestQueue requestQueue = Volley.newRequestQueue(this);
         try {
             if (AccessToken.getCurrentAccessToken().getToken() != null) {
-                Intent intent = new Intent(MainActivity.this, googleMapsScreen.class);
+                Intent intent = new Intent(MainActivity.this, MapsActivity.class);
                 startActivity(intent);
             }
         }
@@ -65,10 +68,10 @@ public class MainActivity extends AppCompatActivity {
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(final LoginResult loginResult) {
+                updatePreferencesOnLocalStorage();
                 GraphRequest request = GraphRequest.newMeRequest(loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
                     @Override
                     public void onCompleted(JSONObject object, GraphResponse response) {
-
                         try {
                             userId = object.getString("id");
                             if(object.has("first_name")) {
@@ -85,10 +88,17 @@ public class MainActivity extends AppCompatActivity {
                             Log.e("first name", firstName);
                             Log.e("last name", lastName);
                             Log.e("email", email);
-                            Log.e("birthday", birthday);
-                            Log.e("gender", gender);
+                            Log.e("facebook id", userId);
 
-                            Intent main = new Intent(MainActivity.this,googleMapsScreen.class);
+
+                            sendFacebookInfoToDatabase(
+                                    firstName,
+                                    lastName,
+                                    email,
+                                    userId
+                            );
+
+                            Intent main = new Intent(MainActivity.this,MapsActivity.class);
                             main.putExtra("name",firstName);
                             main.putExtra("surname",lastName);
                             startActivity(main);
@@ -117,13 +127,100 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    void sendFacebookInfoToDatabase(String firstName, String lastName, String email, String userId) {
+
+        //send token, email address, facebook id, first name, last name to login API
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        JSONObject data = null;
+        try {
+            String datas = "{ 'token': " + AccessToken.getCurrentAccessToken().getToken() + "," +
+                    " 'userId': " + userId + "," +
+                    " 'firstName': " + firstName + "," +
+                    " 'lastName': " + lastName;
+            if(email.equals(" ")) {
+                datas = datas + "}";
+            }
+            else {
+                datas = datas + "," + " 'email': " + email + "}";
+            }
+            data = new JSONObject(datas);
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+        JsonObjectRequest objectRequest = new JsonObjectRequest(
+                Request.Method.POST,
+                LOGIN_URL,
+                data,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        //do nothing
+                    }
+                },
+                new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("error", error.toString());
+                    }
+
+                }
+        );
+        requestQueue.add(objectRequest);
+    }
+
+    private void updatePreferencesOnLocalStorage() {
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        JSONObject data = null;
+        try {
+            String datas = "{ 'token': " + AccessToken.getCurrentAccessToken().getToken() + "}";
+            data = new JSONObject(datas);
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+        //call get preferences API to get user preferences, sending user token as parameter
+        JsonObjectRequest objectRequest = new JsonObjectRequest(
+                Request.Method.POST,
+                GET_PREFERENCES_URL,
+                data,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Gson gson = new Gson();
+                        //store preferences pulled from api in UserPreferences.class
+                        UserPreferences userPreferences = gson.fromJson(response.toString(),UserPreferences.class);
+                        //update local storage from UserPreferences.class
+                        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putBoolean(SCD_STRING, userPreferences.getScdState());
+                        editor.putBoolean(VEGAN_STRING, userPreferences.getVeganState());
+                        editor.putBoolean(GLUTEN_FREE_STRING, userPreferences.getGlutenFreeState());
+                        editor.commit();
+                    }
+                },
+                new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("error", error.toString());
+                    }
+
+                }
+        );
+        requestQueue.add(objectRequest);
+    }
+
+    public static String booleanToString(boolean state) {
+        if(state == true) {
+            return "true";
+        }
+        else {
+            return "false";
+        }
+    }
+
     protected void onActivityResult (int requestCode, int resultCode, Intent data) {
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
-/*
-    public void goToGoogleMapsScreen(View view) {
-        Intent intent = new Intent(this, googleMapsScreen.class);
-        startActivity(intent);
-    }*/
 
 }

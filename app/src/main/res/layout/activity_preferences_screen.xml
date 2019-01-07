@@ -10,8 +10,8 @@
         android:id="@+id/glutenFree_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="140dp"
-        android:layout_marginLeft="140dp"
+        android:layout_marginStart="110dp"
+        android:layout_marginLeft="110dp"
         android:layout_marginTop="8dp"
         android:text="@string/glutenFree"
         app:layout_constraintStart_toStartOf="parent"
@@ -39,16 +39,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button8" />
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="27dp"
-        android:layout_marginBottom="8dp"
-        android:text="@string/preferencesScreen"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <Button
         android:id="@+id/button7"
         android:layout_width="254dp"
@@ -64,8 +54,8 @@
         android:id="@+id/scd_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="140dp"
-        android:layout_marginLeft="140dp"
+        android:layout_marginStart="110dp"
+        android:layout_marginLeft="110dp"
         android:layout_marginTop="16dp"
         android:text="@string/scd"
         app:layout_constraintStart_toStartOf="parent"
@@ -76,8 +66,8 @@
         android:id="@+id/vegan_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="140dp"
-        android:layout_marginLeft="140dp"
+        android:layout_marginStart="110dp"
+        android:layout_marginLeft="110dp"
         android:layout_marginTop="8dp"
         android:text="@string/vegan"
         app:layout_constraintStart_toStartOf="parent"
@@ -87,11 +77,33 @@
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="8dp"
         android:onClick="savePreferences"
         android:text="@string/savePreferences"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/lactoseIntolerant_id" />
+
+    <CheckBox
+        android:id="@+id/allergicToNuts_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="110dp"
+        android:layout_marginLeft="110dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/allergicToNuts"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/vegan_id" />
+
+    <CheckBox
+        android:id="@+id/lactoseIntolerant_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="110dp"
+        android:layout_marginLeft="110dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/lactoseIntolerant"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/allergicToNuts_id" />
 
 </android.support.constraint.ConstraintLayout>
