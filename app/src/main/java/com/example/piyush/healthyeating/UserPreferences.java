@@ -4,11 +4,15 @@ public class UserPreferences {
     private Boolean vegan;
     private Boolean scd;
     private Boolean glutenFree;
+    private Boolean lactose;
+    private Boolean nuts;
 
     public UserPreferences() {
         vegan = false;
         scd = false;
         glutenFree = false;
+        lactose = false;
+        nuts = false;
     }
 
     public void setVeganState(Boolean vegan) {
@@ -23,6 +27,15 @@ public class UserPreferences {
         this.scd = scd;
     }
 
+    public void setLactoseState(Boolean lactose) {
+        this.lactose = lactose;
+    }
+
+    public void setNutsState(Boolean nuts) {
+        this.nuts = nuts;
+    }
+
+
     public boolean getVeganState() {
         return vegan;
     }
@@ -34,4 +47,14 @@ public class UserPreferences {
     public boolean getScdState() {
         return scd;
     }
+
+    public boolean getLactoseState() {
+        return lactose;
+    }
+
+    public boolean getNutsState() {
+        return nuts;
+    }
+
 }
+

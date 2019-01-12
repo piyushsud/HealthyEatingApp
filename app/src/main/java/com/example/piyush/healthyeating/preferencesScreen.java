@@ -16,6 +16,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.facebook.AccessToken;
 import com.facebook.login.LoginManager;
 import com.google.gson.Gson;
 
@@ -37,8 +38,7 @@ public class preferencesScreen extends AppCompatActivity {
     private static final String GLUTEN_FREE_STRING = "glutenFreePrefs";
     private static final String NUTS_STRING = "nutsPrefs";
     private static final String LACTOSE_STRING = "lactosePrefs";
-    private static final String GET_PREFERENCES_URL = "http://apptesting.getsandbox.com/preferences";
-    private static final String UPDATE_PREFERENCES_URL = "http://apptesting.getsandbox.com/updatepreference";
+    private static final String UPDATE_PREFERENCES_URL = "https://healthyeatingapp.com/api/update";
 
     private CheckBox scd;
     private CheckBox glutenFree;
@@ -96,14 +96,14 @@ public class preferencesScreen extends AppCompatActivity {
         editor.commit();
 
         //save to database
-        JSONObject data = null;
+        JSONObject data = new JSONObject();
         try {
-            String preferences = "{ 'scd': " + booleanToString(scd.isChecked()) + "," +
-                    " 'vegan': " + booleanToString(vegan.isChecked()) + "," +
-                    " 'glutenFree': " + booleanToString(glutenFree.isChecked())+ "," +
-                    " 'nuts': " + booleanToString(allergicToNuts.isChecked()) + "," +
-                    " 'lactose': " + booleanToString(lactoseIntolerant.isChecked()) + "}";
-            data = new JSONObject(preferences);
+            data.put("token", AccessToken.getCurrentAccessToken().getToken());
+            data.put("scd", scd.isChecked());
+            data.put("vegan", vegan.isChecked());
+            data.put("gluten_free", glutenFree.isChecked());
+            data.put("nuts", allergicToNuts.isChecked());
+            data.put("lactose", lactoseIntolerant.isChecked());
         } catch (JSONException e){
             e.printStackTrace();
         }

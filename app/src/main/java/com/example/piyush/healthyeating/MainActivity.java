@@ -30,23 +30,25 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String GET_PREFERENCES_URL = "http://apptesting.getsandbox.com/preferences";
-    private static final String UPDATE_PREFERENCES_URL = "http://apptesting.getsandbox.com/updatepreference";
-    private static final String LOGIN_URL = "http://apptesting.getsandbox.com/login";
+    private static final String GET_PREFERENCES_URL = "https://healthyeatingapp.com/api/preferences";
+    private static final String LOGIN_URL = "https://healthyeatingapp.com/api/login";
     private static final String SHARED_PREFS = "sharedPrefs";
     private static final String SCD_STRING = "scdPrefs";
     private static final String VEGAN_STRING = "veganPrefs";
     private static final String GLUTEN_FREE_STRING = "glutenFreePrefs";
+    private static final String NUTS_STRING = "nutsPrefs";
+    private static final String LACTOSE_STRING = "lactosePrefs";
 
     LoginButton loginButton;
     CallbackManager callbackManager;
 
     String userId;
-    String firstName = " ";
-    String lastName = " ";
-    String email = " ";
-    String birthday = " ";
-    String gender = " ";
+    String firstName = "";
+    String lastName = "";
+    String email = "";
+    String birthday = "";
+    String gender = "";
+    String name = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,17 +87,20 @@ public class MainActivity extends AppCompatActivity {
                             if (object.has("gender")){
                                 gender = object.getString("gender");
                             }
-                            Log.e("first name", firstName);
-                            Log.e("last name", lastName);
-                            Log.e("email", email);
-                            Log.e("facebook id", userId);
+                            if (object.has("name")) {
+                                name = object.getString("name");
+                            }
+
+
 
 
                             sendFacebookInfoToDatabase(
                                     firstName,
                                     lastName,
                                     email,
-                                    userId
+                                    userId,
+                                    name,
+                                    gender
                             );
 
                             Intent main = new Intent(MainActivity.this,MapsActivity.class);
@@ -127,26 +132,24 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    void sendFacebookInfoToDatabase(String firstName, String lastName, String email, String userId) {
+    void sendFacebookInfoToDatabase(String firstName, String lastName, String email, String userId, String name, String gender) {
 
         //send token, email address, facebook id, first name, last name to login API
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        JSONObject data = null;
+        JSONObject data = new JSONObject();
         try {
-            String datas = "{ 'token': " + AccessToken.getCurrentAccessToken().getToken() + "," +
-                    " 'userId': " + userId + "," +
-                    " 'firstName': " + firstName + "," +
-                    " 'lastName': " + lastName;
-            if(email.equals(" ")) {
-                datas = datas + "}";
-            }
-            else {
-                datas = datas + "," + " 'email': " + email + "}";
-            }
-            data = new JSONObject(datas);
-        }catch (JSONException e){
+            data.put("token", AccessToken.getCurrentAccessToken().getToken());
+            data.put("first_name", firstName);
+            data.put("last_name", lastName);
+            data.put("email", email);
+            data.put("id", userId);
+            data.put("name", name);
+            data.put("gender", gender);
+        } catch (JSONException e){
             e.printStackTrace();
         }
+
+
         JsonObjectRequest objectRequest = new JsonObjectRequest(
                 Request.Method.POST,
                 LOGIN_URL,
@@ -171,11 +174,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void updatePreferencesOnLocalStorage() {
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        JSONObject data = null;
+        JSONObject data = new JSONObject();
         try {
-            String datas = "{ 'token': " + AccessToken.getCurrentAccessToken().getToken() + "}";
-            data = new JSONObject(datas);
-        }catch (JSONException e){
+            data.put("token", AccessToken.getCurrentAccessToken().getToken());
+        } catch (JSONException e){
             e.printStackTrace();
         }
         //call get preferences API to get user preferences, sending user token as parameter
@@ -186,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
+                        Log.e("Preferences Test", response.toString());
                         Gson gson = new Gson();
                         //store preferences pulled from api in UserPreferences.class
                         UserPreferences userPreferences = gson.fromJson(response.toString(),UserPreferences.class);
@@ -195,6 +198,8 @@ public class MainActivity extends AppCompatActivity {
                         editor.putBoolean(SCD_STRING, userPreferences.getScdState());
                         editor.putBoolean(VEGAN_STRING, userPreferences.getVeganState());
                         editor.putBoolean(GLUTEN_FREE_STRING, userPreferences.getGlutenFreeState());
+                        editor.putBoolean(NUTS_STRING, userPreferences.getNutsState());
+                        editor.putBoolean(LACTOSE_STRING, userPreferences.getLactoseState());
                         editor.commit();
                     }
                 },

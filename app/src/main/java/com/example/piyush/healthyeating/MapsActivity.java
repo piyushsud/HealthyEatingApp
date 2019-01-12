@@ -9,8 +9,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.AppCompatDelegate;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -57,11 +62,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int DEFAULT_ZOOM = 15;
     private static final String TAG = MapsActivity.class.getSimpleName();
-    private static final String RESTAURANTS_URL = "http://apptesting.getsandbox.com/home3";
+    private static final String RESTAURANTS_URL = "https://healthyeatingapp.com/api/restaurants";
 
     // A default location (Sydney, Australia) and default zoom to use when location permission is
     // not granted.
-    private final LatLng mDefaultLocation = new LatLng(37.301011, -122.041285);
+    private final LatLng mDefaultLocation = new LatLng(70, -70);
 
     private GoogleMap mMap;
     private GeoDataClient mGeoDataClient;
@@ -74,6 +79,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -106,6 +112,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
                     PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
+
     }
 
     @Override
@@ -144,19 +151,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Get the current location of the device and set the position of the map.
         getDeviceLocation();
 
-
-        //Put pins on all the restaurants specified by the restaurant location API
-        putPins();
     }
 
-    private void putPins() {
+    private void putPins(double latitude, double longitude) {
         //send token to restaurants API
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        JSONObject data = null;
+        JSONObject data = new JSONObject();
         try {
-            String datas = "{ 'token': " + AccessToken.getCurrentAccessToken().getToken() + "}";
-            data = new JSONObject(datas);
-        }catch (JSONException e){
+            data.put("token", AccessToken.getCurrentAccessToken().getToken());
+            data.put("latitude", latitude);
+            data.put("longitude", longitude);
+        } catch (JSONException e){
             e.printStackTrace();
         }
         JsonObjectRequest objectRequest = new JsonObjectRequest(
@@ -166,6 +171,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
+                        Log.e("response test", response.toString());
                         JsonObject jobj = new Gson().fromJson(response.toString(), JsonObject.class);
                         String restaurantListString = jobj.get("restaurant_list").toString();
 
@@ -218,6 +224,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
         }
+        Log.e("finished getting locat", "finished getting locat");
     }
 
     private void getDeviceLocation() {
@@ -234,10 +241,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         if (task.isSuccessful()) {
                             // Set the map's camera position to the current location of the device.
                             mLastKnownLocation = task.getResult();
+                            double latitude = mLastKnownLocation.getLatitude();
+                            double longitude = mLastKnownLocation.getLongitude();
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                    new LatLng(mLastKnownLocation.getLatitude(),
-                                            mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                                    new LatLng(latitude, longitude), DEFAULT_ZOOM));
                             mMap.setMyLocationEnabled(true);
+                            putPins(latitude, longitude);
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());
